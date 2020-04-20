@@ -14,12 +14,12 @@ import (
 )
 
 type statistics struct {
-	sentPackets 	int
+	sentPackets     int
 	receivedPackets int
-	minRTT 			time.Duration
-	maxRTT 			time.Duration
-	avgRTT 			time.Duration
-	totalTime 		time.Duration
+	minRTT          time.Duration
+	maxRTT          time.Duration
+	avgRTT          time.Duration
+	totalTime       time.Duration
 }
 
 func main() {
@@ -72,7 +72,7 @@ func main() {
 
 	go func() {
 
-		for i:=0; ;i++{
+		for i := 0; ; i++ {
 			var ICMPMessage4, ICMPMessage6 icmp.Message
 			var ICMPEchoRequest []byte
 			ICMPEchoResponse := make([]byte, 1500)
@@ -80,9 +80,9 @@ func main() {
 			start := time.Now()
 			if *ipVersion6 {
 				ICMPMessage6 = icmp.Message{
-					Type:     ipv6.ICMPTypeEchoRequest,
-					Code:     0,
-					Body:     &icmp.Echo{
+					Type: ipv6.ICMPTypeEchoRequest,
+					Code: 0,
+					Body: &icmp.Echo{
 						ID:   20000,
 						Seq:  i,
 						Data: []byte("REQUEST"),
@@ -97,11 +97,11 @@ func main() {
 					fmt.Println(err)
 					os.Exit(0)
 				} else {
-					stats.sentPackets ++
+					stats.sentPackets++
 				}
 
 				connection6.SetReadDeadline(start.Add(5 * time.Second))
-				_,receivedFromAddress,err = connection6.ReadFrom(ICMPEchoResponse)
+				_, receivedFromAddress, err = connection6.ReadFrom(ICMPEchoResponse)
 				if err != nil {
 					fmt.Println("err")
 					continue
@@ -109,9 +109,9 @@ func main() {
 
 			} else {
 				ICMPMessage4 = icmp.Message{
-					Type:     ipv4.ICMPTypeEcho,
-					Code:     0,
-					Body:     &icmp.Echo{
+					Type: ipv4.ICMPTypeEcho,
+					Code: 0,
+					Body: &icmp.Echo{
 						ID:   20000,
 						Seq:  i,
 						Data: []byte("REQUEST"),
@@ -126,11 +126,11 @@ func main() {
 					fmt.Println(err)
 					os.Exit(0)
 				} else {
-					stats.sentPackets ++
+					stats.sentPackets++
 				}
 
 				connection4.SetReadDeadline(start.Add(5 * time.Second))
-				_,receivedFromAddress,err = connection4.ReadFrom(ICMPEchoResponse)
+				_, receivedFromAddress, err = connection4.ReadFrom(ICMPEchoResponse)
 				if err != nil {
 					fmt.Println("err")
 					continue
@@ -147,10 +147,8 @@ func main() {
 			}
 			stats.totalTime += duration
 
-
-
 			if *ipVersion6 {
-				message , err := icmp.ParseMessage(58, ICMPEchoResponse)
+				message, err := icmp.ParseMessage(58, ICMPEchoResponse)
 				if err != nil {
 					panic(err)
 				}
@@ -162,13 +160,13 @@ func main() {
 				} else if message.Type == ipv6.ICMPTypeEchoReply {
 					switch message.Code {
 					case 0:
-						fmt.Printf("%d bytes from %s: icmp_seq= %d time=%v \n",cap(ICMPEchoRequest), receivedFromAddress, i+1, duration)
+						fmt.Printf("%d bytes from %s: icmp_seq= %d time=%v \n", cap(ICMPEchoRequest), receivedFromAddress, i+1, duration)
 						stats.receivedPackets++
 						done = true
 					}
 				}
 			} else {
-				message , err := icmp.ParseMessage(1, ICMPEchoResponse)
+				message, err := icmp.ParseMessage(1, ICMPEchoResponse)
 				if err != nil {
 					panic(err)
 				}
@@ -180,14 +178,14 @@ func main() {
 				} else if message.Type == ipv4.ICMPTypeEchoReply {
 					switch message.Code {
 					case 0:
-						fmt.Printf("%d bytes from %s: icmp_seq= %d time=%v \n",cap(ICMPEchoRequest), receivedFromAddress, i+1, duration)
+						fmt.Printf("%d bytes from %s: icmp_seq= %d time=%v \n", cap(ICMPEchoRequest), receivedFromAddress, i+1, duration)
 						stats.receivedPackets++
 						done = true
 					}
 
 				}
 			}
-			time.Sleep(1 * time.Second - time.Since(start))
+			time.Sleep(1*time.Second - time.Since(start))
 		}
 	}()
 
